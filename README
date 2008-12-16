@@ -21,9 +21,12 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
+ - INTRO -
+
 This is some generic drag code, it started as something simple I needed, then turned into something I'd like to improve continuously.
 Lots of this code was made with stuff that I learned at the comp.lang.javascript FAQ <http://www.jibbering.com/faq/> and from the people at the newsgroup.
 Any comments and critics will be greatly appreciated.
+
 
  - INSTRUCTIONS -
 
@@ -34,3 +37,8 @@ This function accepts two parameters:
     - handler (optional)
         An element reference or a string with the matching ID of the element that will be the movement handler.
         If none is passed, the function will make the first element also be the handler.
+
+
+ - DEMO -
+
+A live demonstration can be viewed at http://www.souagil.com.br/gabriel/drag/
