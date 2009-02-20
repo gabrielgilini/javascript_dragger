@@ -5,7 +5,7 @@
         <title>Drag Test</title>
         <script type="text/javascript" src="drag.js"></script>
         <style>
-            #draggable{
+            .draggable{
                 background: url("spam3.jpg") center no-repeat;
                 border: 4px solid #EEEEEE;
                 width: 324px;
@@ -14,7 +14,7 @@
                 top: 200px;
                 left: 300px;
             }
-            #handler{
+            .handler{
                 width: 100px;
                 color: #BBBBBB;
                 background-color: #EEEEEE;
@@ -33,11 +33,16 @@
     <body>
         <h1>Drag Test</h1>
         <p>Only the top and left viewport borders are constrained.</p>
-        <div id='draggable'>
-            <div id='handler'>grab here</div>
+        <div id='d1' class='draggable'>
+            <div id='h1' class='handler'>grab here</div>
+        </div>
+
+        <div id='d2' class='draggable' style='top: 300px'>
+            <div id='h2' class='handler'>grab here</div>
         </div>
     </body>
 </html>
 <script type="text/javascript">
-    drag.init('draggable', 'handler');
+    new Drag('d1', 'h1');
+    new Drag('d2', 'h2');
 </script>
