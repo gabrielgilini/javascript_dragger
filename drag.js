@@ -128,7 +128,6 @@ function Drag(elm, handler){
     }
 
     this.initDrag = function(){
-        console.log(this);
         this.isDragging = true;
         this.lastMouseCoords = [
             this.mouseCoords[0],
@@ -140,11 +139,13 @@ function Drag(elm, handler){
             this.draggable.style.top = offsets[1] + 'px';
         }
         this.windowDimensions = this.getWinDimensions();
+        this.draggable.style.zIndex = this.handler.style.zIndex = '1000';
         this._drag();
     }
 
     this.endDrag = function(){
         this.isDragging = false;
+        this.draggable.style.zIndex = this.handler.style.zIndex = '';
     }
 
     this.watchMouse = function(e){
