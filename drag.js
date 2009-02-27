@@ -65,22 +65,22 @@ function Drag(elm, handler){
     
     // setupping the dimensions function
     // because it is unreliable before body load
-    this.getWinDimensions = (function(){
-        if(typeof document.clientWidth == "number") {
-            return function(){
-                return [document.clientWidth, document.clientHeight];
-            }
-        }
-        else if(this.IS_BODY_ACTING_ROOT || this.IS_DOCUMENT_ELEMENT_HEIGHT_OFF) {
-            return function(){
-                return [document.body.clientWidth, document.body.clientHeight];
-            }
-        } else {
-            return function(){
-                return [document.documentElement.clientWidth, document.documentElement.clientHeight];
-            }
-        }
-    })();
+//     this.getWinDimensions = (function(){
+//         if(typeof document.clientWidth == "number") {
+//             return function(){
+//                 return [document.clientWidth, document.clientHeight];
+//             }
+//         }
+//         else if(this.IS_BODY_ACTING_ROOT || this.IS_DOCUMENT_ELEMENT_HEIGHT_OFF) {
+//             return function(){
+//                 return [document.body.clientWidth, document.body.clientHeight];
+//             }
+//         } else {
+//             return function(){
+//                 return [document.documentElement.clientWidth, document.documentElement.clientHeight];
+//             }
+//         }
+//     })();
     
     this.evtObserve = (function(){
         if(document.addEventListener){
@@ -129,7 +129,7 @@ function Drag(elm, handler){
             this.draggable.style.left = offsets[0] + 'px';
             this.draggable.style.top = offsets[1] + 'px';
         }
-        this.windowDimensions = this.getWinDimensions();
+        //this.windowDimensions = this.getWinDimensions();
         this.draggable.style.zIndex = this.handler.style.zIndex = '1000';
         this._drag();
     }, {bind: this});
