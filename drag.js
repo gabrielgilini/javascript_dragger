@@ -9,6 +9,8 @@
 // Software is furnished to do so, subject to the following
 // conditions:
 //
+// - A simple reference on the code and it's cool :)
+//
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
 //
