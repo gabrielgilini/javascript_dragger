@@ -32,8 +32,8 @@ Any comments and critics will be greatly appreciated.
 
  - INSTRUCTIONS -
 
-Just add the drag.js script to your page and call the drag.init() function when the page loads.
-This function accepts two parameters:
+Just add the drag.js script to your page and instantiate a new Drag object when the page loads.
+This constructor accepts two parameters:
     - elm
         An element reference or a string with the matching ID of the element to be dragged.
     - handler (optional)
