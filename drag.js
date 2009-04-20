@@ -9,6 +9,8 @@
 // Software is furnished to do so, subject to the following
 // conditions:
 //
+// - A simple reference on the code and it's cool :)
+//
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
 //
@@ -22,9 +24,8 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 
 function Drag(elm, options){
-    this.isDragging = false;
-    this.isResizing = false;
     this.options = options || {};
+    this.timerID = null;
 
     this.draggable = (typeof elm == 'string')?
         document.getElementById(elm):
@@ -80,24 +81,25 @@ function Drag(elm, options){
         d.body.removeChild(div);
         return r;
     })();
+
     // setupping the dimensions function
     // because it is unreliable before body load
-    this.getWinDimensions = (function(){
-        if(typeof document.clientWidth == "number") {
-            return function(){
-                return [document.clientWidth, document.clientHeight];
-            };
-        }
-        else if(this.IS_BODY_ACTING_ROOT || this.IS_DOCUMENT_ELEMENT_HEIGHT_OFF) {
-            return function(){
-                return [document.body.clientWidth, document.body.clientHeight];
-            };
-        } else {
-            return function(){
-                return [document.documentElement.clientWidth, document.documentElement.clientHeight];
-            };
-        }
-    })();
+//     this.getWinDimensions = (function(){
+//         if(typeof document.clientWidth == "number") {
+//             return function(){
+//                 return [document.clientWidth, document.clientHeight];
+//             }
+//         }
+//         else if(this.IS_BODY_ACTING_ROOT || this.IS_DOCUMENT_ELEMENT_HEIGHT_OFF) {
+//             return function(){
+//                 return [document.body.clientWidth, document.body.clientHeight];
+//             }
+//         } else {
+//             return function(){
+//                 return [document.documentElement.clientWidth, document.documentElement.clientHeight];
+//             }
+//         }
+//     })();
 
     this.getOffsets = function(){
         var offLeft = 0,
@@ -111,8 +113,58 @@ function Drag(elm, options){
         }
         return [offLeft, offTop];
     }
+    this.evtObserve = (function(){
+        if(document.addEventListener){
+            return function(evt, callbackFn, elm){
+                elm = elm || document;
+                elm.addEventListener(evt, callbackFn, false);
+            }
+        }else if(document.attachEvent){
+            return function(evt, callbackFn, elm){
+                elm = elm || document;
+                elm.attachEvent('on'+evt, callbackFn);
+            }
+        }else{
+            return function(evt, callbackFn, elm){
+                elm = elm || document;
+                elm['on'+evt] = callbackFn;
+            }
+        }
+    })();
 
-    this._drag = function(){
+    // Adapted from http://onemarco.com/2008/11/12/callbacks-and-binding-and-callback-arguments-and-references/
+    this.callback = function(fn, opts){
+        opts = opts || {};
+        var cb = function(){
+            var args = opts.args ? opts.args : [];
+            var bind = opts.bind ? opts.bind : this;
+            var fargs = opts.supressArgs === true ?
+                [] : Array.prototype.slice.call(arguments);
+                  // This converts the arguments array-like
+                  // object to an actual array
+
+            fn.apply(bind,fargs.concat(args));
+        }
+        return cb;
+    }
+
+    // Start of the actual dragging code
+    this.initDrag = this.callback(function(){
+        this.lastMouseCoords = [
+            this.mouseCoords[0],
+            this.mouseCoords[1]
+        ];
+        if(!this.draggable.style.left || !this.draggable.style.top){
+            var offsets = this.getOffsets();
+            this.draggable.style.left = offsets[0] + 'px';
+            this.draggable.style.top = offsets[1] + 'px';
+        }
+        //this.windowDimensions = this.getWinDimensions();
+        this.draggable.style.zIndex = this.handler.style.zIndex = '1000';
+        this.timerID = window.setInterval(this._drag, 30);
+    }, {bind: this});
+
+    this._drag = this.callback(function(){
         this.newLeft = parseInt(this.draggable.style.left, 10) -
             (this.lastMouseCoords[0] - this.mouseCoords[0]);
         this.newTop = parseInt(this.draggable.style.top, 10) -
@@ -129,34 +181,14 @@ function Drag(elm, options){
             this.draggable.style.top = this.newTop + 'px';
 
         this.lastMouseCoords = this.mouseCoords;
+    }, {bind: this});
 
-        if(this.isDragging){
-            setTimeout(callback(this._drag, {bind: this}), 10);
-        }
-    }
-
-    this.initDrag = function(){
-        this.isDragging = true;
-        this.lastMouseCoords = [
-            this.mouseCoords[0],
-            this.mouseCoords[1]
-        ];
-        if(!this.draggable.style.left || !this.draggable.style.top){
-            var offsets = this.getOffsets();
-            this.draggable.style.left = offsets[0] + 'px';
-            this.draggable.style.top = offsets[1] + 'px';
-        }
-        this.windowDimensions = this.getWinDimensions();
-        this.draggable.style.zIndex = this.handler.style.zIndex = '1000';
-        this._drag();
-    }
-
-    this.endDrag = function(){
-        this.isDragging = false;
+    this.endDrag = this.callback(function(){
+        window.clearInterval(this.timerID);
         this.draggable.style.zIndex = this.handler.style.zIndex = '';
-    }
+    }, {bind: this});
 
-    this.watchMouse = function(e){
+    this.watchMouse = this.callback(function(e){
         e = e || window.event;
 
         this.mouseCoords = [
@@ -169,31 +201,16 @@ function Drag(elm, options){
                 document.body.scrollTop +
                 document.documentElement.scrollTop
         ];
-    }
+    }, {bind: this});
 
-    this.evtObserve('mousemove', callback(this.watchMouse, {bind: this}));
-    this.evtObserve('mousedown', callback(this.initDrag, {bind: this}), this.handler);
-    this.evtObserve('mouseup', callback(this.endDrag, {bind: this}));
-}
+    // prevent text selection on the handler
+    // ie
+    this.handler.onselectstart = function(){return false;}
+    // others
+    this.handler.onmousedown = function(){return false;}
 
-// Adapted from http://onemarco.com/2008/11/12/callbacks-and-binding-and-callback-arguments-and-references/
-function callback(func,opts){
-    opts = opts || {};
-    var cb = function(){
-        var args = opts.args ? opts.args : [];
-        var bind = opts.bind ? opts.bind : this;
-        var fargs = opts.supressArgs === true ?
-            [] : toArray(arguments);
-
-        func.apply(bind,fargs.concat(args));
-    }
-    return cb;
-}
-
-function toArray(arrayLike){
-    var arr = [];
-    for(var i = 0; i < arrayLike.length; i++){
-        arr.push(arrayLike[i]);
-    }
-    return arr;
+    // attach the event callbacks
+    this.evtObserve('mousemove', this.watchMouse);
+    this.evtObserve('mousedown', this.initDrag, this.handler);
+    this.evtObserve('mouseup', this.endDrag);
 }
