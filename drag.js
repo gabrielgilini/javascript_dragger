@@ -21,43 +21,51 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-function Drag(elm, handler){
+function Drag(elm, options){
     this.isDragging = false;
+    this.isResizing = false;
+    this.options = options || {};
+
     this.draggable = (typeof elm == 'string')?
         document.getElementById(elm):
         elm;
-    this.handler = (typeof handler == 'undefined')?
+    this.handler = (typeof this.options.handler == 'undefined')?
         this.draggable:
-        (typeof handler == 'string')?
-            document.getElementById(handler):
-            handler;
-    // attach the event callbacks
+        (typeof this.options.handler == 'string')?
+            document.getElementById(this.options.handler):
+            this.options.handler;
+
+    if(this.options.resize){
+        this.resizeHandler = this.options.resize.handler || null;
+    }
 
     this.evtObserve = (function(){
         if(document.addEventListener){
             return function(evt, callbackFn, elm){
                 elm = (typeof elm == 'undefined')?document:elm;
                 elm.addEventListener(evt, callbackFn, false);
-            }
+            };
         }else if(document.attachEvent){
             return function(evt, callbackFn, elm){
                 elm = (typeof elm == 'undefined')?document:elm;
                 elm.attachEvent('on'+evt, callbackFn);
-            }
+            };
         }else{
             return function(evt, callbackFn, elm){
                 elm = (typeof elm == 'undefined')?document:elm;
                 if(elm['on'+evt]){
                     elm['on'+evt] = callbackFn;
                 }
-            }
+            };
         }
-    })()
+    })();
     // prevent text selection on the handler
-    // moz
-    this.handler.onmousedown = function(){return false;}
-    // ie
-    this.handler.onselectstart = function(){return false;}
+    this.handler.onmousedown = function(){return false;};
+    this.handler.onselectstart = function(){return false;};
+    if(this.resizeHandler){
+        this.resizeHandler.onmousedown = function(){return false;};
+        this.resizeHandler.onselectstart = function(){return false;};
+    }
 
     // viewport stuff
     // from jibbering FAQ <http://www.jibbering.com/faq/#getWindowSize>
@@ -78,28 +86,28 @@ function Drag(elm, handler){
         if(typeof document.clientWidth == "number") {
             return function(){
                 return [document.clientWidth, document.clientHeight];
-            }
+            };
         }
         else if(this.IS_BODY_ACTING_ROOT || this.IS_DOCUMENT_ELEMENT_HEIGHT_OFF) {
             return function(){
                 return [document.body.clientWidth, document.body.clientHeight];
-            }
+            };
         } else {
             return function(){
                 return [document.documentElement.clientWidth, document.documentElement.clientHeight];
-            }
+            };
         }
     })();
 
     this.getOffsets = function(){
-        var offLeft =
+        var offLeft = 0,
             offTop = 0;
         var elm = this.draggable;
         if(elm.offsetParent){
             do{
                 offLeft += elm.offsetLeft;
                 offTop += elm.offsetTop;
-            }while(elm = elm.offsetParent)
+            }while(!!(elm = elm.offsetParent));
         }
         return [offLeft, offTop];
     }
